@@ -1,0 +1,618 @@
+/* ═══════════════════════════════════════════════════════════
+   OrdersPage — CSS Module
+   ═══════════════════════════════════════════════════════════ */
+
+.pageWrapper {
+  min-height: 100vh;
+  background: var(--color-surface-deep);
+  padding-bottom: 80px;
+  padding-top: 72px;
+}
+
+.pageHeader {
+  background: linear-gradient(
+    135deg,
+    var(--color-surface-container) 0%,
+    var(--color-surface-elevated) 100%
+  );
+  border-bottom: 1px solid var(--color-border-glass);
+  padding: 40px var(--spacing-gutter) 32px;
+}
+
+.headerContent {
+  max-width: var(--spacing-container-max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.titleIcon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 4px 20px rgba(255, 193, 116, 0.3);
+}
+
+.pageTitle {
+  font-family: var(--font-headline);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.pageSubtitle {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Layout principal ─── */
+.content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px var(--spacing-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ─── Secciones ─── */
+.sectionTitle {
+  font-family: var(--font-headline);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sectionTitle .material-symbols-outlined {
+  color: var(--color-primary);
+  font-size: 22px;
+}
+
+/* ─── Carrito actual / resumen ─── */
+.cartSection {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.cartSectionHeader {
+  padding: 24px 28px 0;
+}
+
+.cartItemsList {
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cartItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-fast);
+}
+
+.cartItem:hover {
+  border-color: rgba(255, 193, 116, 0.15);
+}
+
+.cartItemImg {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cartItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.cartItemName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-on-surface);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cartItemMeta {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.cartItemControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qtyBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-glass);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all var(--transition-fast);
+}
+
+.qtyBtn:hover {
+  background: rgba(255, 193, 116, 0.15);
+  border-color: rgba(255, 193, 116, 0.3);
+  color: var(--color-primary);
+}
+
+.qtyNum {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  min-width: 24px;
+  text-align: center;
+}
+
+.cartItemPrice {
+  font-family: var(--font-headline);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 64px;
+  text-align: right;
+}
+
+.removeBtn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Material Symbols Outlined';
+  font-size: 18px;
+  transition: all var(--transition-fast);
+}
+
+.removeBtn:hover {
+  background: rgba(255, 70, 70, 0.1);
+  color: #ff6b6b;
+}
+
+/* ─── Notas ─── */
+.notesArea {
+  padding: 0 28px 20px;
+}
+
+.notesLabel {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.notesTextarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--radius-lg);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+
+.notesTextarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.notesTextarea:focus {
+  border-color: rgba(255, 193, 116, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 193, 116, 0.08);
+}
+
+/* ─── Resumen del carrito ─── */
+.cartSummary {
+  border-top: 1px solid var(--color-border-glass);
+  padding: 20px 28px;
+  background: rgba(255, 193, 116, 0.03);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.summaryLabel {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.summaryValue {
+  font-size: 0.9rem;
+  color: var(--color-on-surface);
+  font-weight: 500;
+}
+
+.summaryDivider {
+  height: 1px;
+  background: var(--color-border-glass);
+  margin: 12px 0;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.totalLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.totalAmount {
+  font-family: var(--font-headline);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.confirmBtn {
+  width: 100%;
+  margin-top: 16px;
+  justify-content: center;
+  position: relative;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 193, 116, 0.3);
+  border-top-color: var(--color-on-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Historial de pedidos ─── */
+.ordersSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.orderCard {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.orderCard:hover {
+  border-color: rgba(255, 193, 116, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.orderHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.orderMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderNumber {
+  font-family: var(--font-headline);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.orderDate {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.orderStatus {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* ─── Timeline de estado ─── */
+.timeline {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border-glass);
+  border-bottom: 1px solid var(--color-border-glass);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.timelineTrack {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.timelineStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  position: relative;
+}
+
+.timelineStep:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--color-surface-container-high);
+  z-index: 0;
+}
+
+.timelineStep.done:not(:last-child)::after,
+.timelineStep.current:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-surface-container-high) 100%);
+}
+
+.timelineDot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface-container-high);
+  background: var(--color-surface-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: all var(--transition-normal);
+}
+
+.timelineStep.done .timelineDot {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(255, 193, 116, 0.4);
+}
+
+.timelineStep.current .timelineDot {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 12px rgba(78, 222, 163, 0.5);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(78, 222, 163, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(78, 222, 163, 0); }
+}
+
+.timelineDotIcon {
+  font-size: 12px;
+  color: white;
+  font-family: 'Material Symbols Outlined';
+}
+
+.timelineLabel {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.timelineStep.done .timelineLabel,
+.timelineStep.current .timelineLabel {
+  color: var(--color-on-surface);
+  font-weight: 600;
+}
+
+/* ─── Items del pedido ─── */
+.orderItemsList {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.orderItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.orderItemName {
+  color: var(--color-on-surface);
+  flex: 1;
+}
+
+.orderItemQty {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  background: var(--color-surface-container-high);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.orderItemPrice {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 56px;
+  text-align: right;
+}
+
+.orderFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: rgba(0, 0, 0, 0.12);
+  border-top: 1px solid var(--color-border-glass);
+}
+
+.orderTotalLabel {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.orderTotal {
+  font-family: var(--font-headline);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ─── Estado vacío ─── */
+.emptyState {
+  text-align: center;
+  padding: 80px 32px;
+}
+
+.emptyIcon {
+  font-size: 72px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.emptyTitle {
+  font-family: var(--font-headline);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: 10px;
+}
+
+.emptyText {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin-bottom: 32px;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── Loading ─── */
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 193, 116, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Éxito al crear pedido ─── */
+.successBanner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: rgba(78, 222, 163, 0.1);
+  border: 1px solid rgba(78, 222, 163, 0.3);
+  border-radius: var(--radius-xl);
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.successIcon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.successText {
+  flex: 1;
+}
+
+.successTitle {
+  font-family: var(--font-headline);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  margin-bottom: 2px;
+}
+
+.successSubtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

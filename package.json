@@ -1,0 +1,26 @@
+{
+  "name": "darkitchen",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "shared",
+    "backend/api-gateway",
+    "backend/auth-service",
+    "backend/catalog-service",
+    "backend/order-service",
+    "backend/chat-service"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:auth": "npm run start:dev --workspace=backend/auth-service",
+    "dev:catalog": "npm run start:dev --workspace=backend/catalog-service",
+    "dev:order": "npm run start:dev --workspace=backend/order-service",
+    "dev:chat": "npm run start:dev --workspace=backend/chat-service",
+    "dev:gateway": "npm run start:dev --workspace=backend/api-gateway",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "format:check": "npm run format:check --workspaces --if-present"
+  }
+}

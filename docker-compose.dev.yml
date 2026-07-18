@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  db-auth:
+    image: postgres:15-alpine
+    container_name: darkitchen-db-auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-auth:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db-catalog:
+    image: postgres:15-alpine
+    container_name: darkitchen-db-catalog
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: catalog_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata-catalog:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db-orders:
+    image: postgres:15-alpine
+    container_name: darkitchen-db-orders
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: orders_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata-orders:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db-chat:
+    image: postgres:15-alpine
+    container_name: darkitchen-db-chat
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: chat_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - pgdata-chat:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis-broker:
+    image: redis:7-alpine
+    container_name: darkitchen-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+volumes:
+  pgdata-auth:
+  pgdata-catalog:
+  pgdata-orders:
+  pgdata-chat:
+  redis-data:

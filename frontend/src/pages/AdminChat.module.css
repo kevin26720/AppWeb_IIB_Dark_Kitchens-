@@ -1,0 +1,201 @@
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 72px;
+  background-color: var(--color-surface-deep);
+}
+
+.mainContent {
+  flex: 1;
+  padding: 32px 48px;
+  margin-left: 260px;
+  height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+}
+
+.chatContainer {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-glass);
+}
+
+/* Left Panel */
+.conversationsPanel {
+  width: 320px;
+  background: var(--color-surface-container);
+  border-right: 1px solid var(--color-border-glass);
+  display: flex;
+  flex-direction: column;
+}
+
+.panelHeader {
+  padding: 24px;
+  border-bottom: 1px solid var(--color-border-glass);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conversationsList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.conversationItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border-glass);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.conversationItem:hover {
+  background: var(--color-surface-container-high);
+}
+
+.activeConversation {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 3px solid var(--color-primary);
+}
+
+.convAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-surface-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.convDetails {
+  flex: 1;
+  overflow: hidden;
+}
+
+.convPreview {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+
+.unreadBadge {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 11px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Right Panel */
+.chatPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-container-lowest);
+}
+
+.chatHeader {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--color-border-glass);
+  background: var(--color-surface-container);
+}
+
+.headerAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-surface-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.messagesArea {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dateDivider {
+  text-align: center;
+  margin: 16px 0;
+  position: relative;
+}
+
+.dateDivider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border-glass);
+  z-index: 1;
+}
+
+.dateDivider span {
+  position: relative;
+  z-index: 2;
+  background: var(--color-surface-container-lowest);
+  padding: 0 16px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.messageWrapper {
+  display: flex;
+  width: 100%;
+}
+
+.wrapperAdmin {
+  justify-content: flex-end;
+}
+
+.wrapperClient {
+  justify-content: flex-start;
+}
+
+.messageTime {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 6px;
+  text-align: right;
+}
+
+.inputArea {
+  padding: 24px 32px;
+  background: var(--color-surface-container);
+  border-top: 1px solid var(--color-border-glass);
+  display: flex;
+  gap: 12px;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-deep);
+}
