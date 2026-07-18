@@ -1,0 +1,19 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int      // Referencia lógica del emisor
+  room      String   @default("general") // Canal de soporte
+  createdAt DateTime @default(now())
+
+  @@index([room])
+  @@index([createdAt])
+}
