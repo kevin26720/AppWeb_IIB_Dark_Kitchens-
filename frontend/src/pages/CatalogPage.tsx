@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import type { Product } from '@darkitchen/shared'
 import { getProducts, getCategories } from '@/api/catalog.api'
 import { useCartStore } from '@/store/cartStore'
+import { useAuthStore } from '@/store/authStore'
+import { Role } from '@darkitchen/shared'
 import styles from './CatalogPage.module.css'
 
 const CATEGORIES = ['Todos', 'Entradas', 'Platos Fuertes', 'Ensaladas', 'Bebidas', 'Postres']
@@ -29,6 +31,8 @@ interface ProductCardProps {
 
 function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem)
+  const { user } = useAuthStore()
+  const isAdmin = user?.role === Role.ADMIN
   const [added, setAdded] = useState(false)
 
   const handleAdd = () => {
@@ -67,18 +71,20 @@ function ProductCard({ product }: ProductCardProps) {
 
         <div className={styles.cardFooter}>
           <span className={styles.price}>${product.price.toFixed(2)}</span>
-          <button
-            id={`add-to-cart-${product.id}`}
-            className={`${styles.addBtn} ${added ? styles.added : ''}`}
-            onClick={handleAdd}
-            disabled={!product.available}
-            aria-label={`Agregar ${product.name} al carrito`}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-              {added ? 'check_circle' : 'add_shopping_cart'}
-            </span>
-            {added ? '¡Añadido!' : 'Agregar'}
-          </button>
+          {!isAdmin && (
+            <button
+              id={`add-to-cart-${product.id}`}
+              className={`${styles.addBtn} ${added ? styles.added : ''}`}
+              onClick={handleAdd}
+              disabled={!product.available}
+              aria-label={`Agregar ${product.name} al carrito`}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+                {added ? 'check_circle' : 'add_shopping_cart'}
+              </span>
+              {added ? '¡Añadido!' : 'Agregar'}
+            </button>
+          )}
         </div>
       </div>
     </article>
@@ -100,6 +106,8 @@ export function CatalogPage() {
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
 
   const { itemCount, openCart, isOpen } = useCartStore()
+  const { user } = useAuthStore()
+  const isAdmin = user?.role === Role.ADMIN
 
   // Cargar categorías
   useEffect(() => {
@@ -195,20 +203,22 @@ export function CatalogPage() {
                 </p>
               </div>
             </div>
-            <button
-              className={styles.cartHeaderBtn}
-              id="catalog-cart-header-btn"
-              onClick={openCart}
-              aria-label="Abrir carrito"
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                shopping_cart
-              </span>
-              Mi Pedido
-              {itemCount > 0 && (
-                <span className={styles.cartBadge}>{itemCount}</span>
-              )}
-            </button>
+            {!isAdmin && (
+              <button
+                className={styles.cartHeaderBtn}
+                id="catalog-cart-header-btn"
+                onClick={openCart}
+                aria-label="Abrir carrito"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                  shopping_cart
+                </span>
+                Mi Pedido
+                {itemCount > 0 && (
+                  <span className={styles.cartBadge}>{itemCount}</span>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Barra de búsqueda */}
@@ -342,7 +352,7 @@ export function CatalogPage() {
       </div>
 
       {/* FAB del carrito */}
-      {itemCount > 0 && !isOpen && (
+      {!isAdmin && itemCount > 0 && !isOpen && (
         <button
           className={styles.cartFab}
           id="catalog-cart-fab"

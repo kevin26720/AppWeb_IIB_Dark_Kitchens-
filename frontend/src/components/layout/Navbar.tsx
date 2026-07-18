@@ -34,7 +34,7 @@ export const Navbar = () => {
         <div className={styles.links}>
           <Link to="/" className={`${styles.link} ${isActive('/') ? styles.linkActive : ''}`}>Inicio</Link>
           <Link to="/catalog" className={`${styles.link} ${isActive('/catalog') ? styles.linkActive : ''}`}>Catálogo</Link>
-          {isAuthenticated && (
+          {isAuthenticated && user?.role === Role.CLIENT && (
             <Link to="/orders" className={`${styles.link} ${isActive('/orders') ? styles.linkActive : ''}`}>Mis Pedidos</Link>
           )}
           {isAuthenticated && user?.role === Role.ADMIN && (
@@ -54,7 +54,7 @@ export const Navbar = () => {
             </Link>
           )}
 
-          {isAuthenticated && (
+          {isAuthenticated && user?.role === Role.CLIENT && (
             <button className={styles.cartBtn} onClick={toggleCart} id="cart-btn" aria-label="Carrito">
               <span className="material-symbols-outlined">shopping_cart</span>
               {itemCount > 0 && <span className={styles.cartBadge}>{itemCount}</span>}
@@ -117,7 +117,7 @@ export const Navbar = () => {
         <div className={styles.mobileMenu}>
           <Link to="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Inicio</Link>
           <Link to="/catalog" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Catálogo</Link>
-          {isAuthenticated && (
+          {isAuthenticated && user?.role === Role.CLIENT && (
             <>
               <Link to="/orders" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Mis Pedidos</Link>
               <Link to="/chat" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Chat</Link>

@@ -9,13 +9,6 @@
   flex: 1;
   padding: 32px 48px;
   overflow-y: auto;
-  margin-left: 260px; /* Sidebar width */
-}
-
-@media (max-width: 1024px) {
-  .mainContent {
-    margin-left: 80px; /* Collapsed sidebar width if we had one */
-  }
 }
 
 .header {

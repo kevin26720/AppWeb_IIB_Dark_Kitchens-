@@ -18,34 +18,33 @@ interface CartState {
   itemCount: number
 }
 
+const calculateTotals = (items: CartItem[]) => {
+  return {
+    total: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+  }
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
       isOpen: false,
-
-      get total() {
-        return get().items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      },
-
-      get itemCount() {
-        return get().items.reduce((sum, item) => sum + item.quantity, 0)
-      },
+      total: 0,
+      itemCount: 0,
 
       addItem: (product, quantity = 1) => {
         set((state) => {
+          let newItems: CartItem[]
           const existing = state.items.find((i) => i.productId === product.id)
           if (existing) {
-            return {
-              items: state.items.map((i) =>
-                i.productId === product.id
-                  ? { ...i, quantity: i.quantity + quantity }
-                  : i
-              ),
-            }
-          }
-          return {
-            items: [
+            newItems = state.items.map((i) =>
+              i.productId === product.id
+                ? { ...i, quantity: i.quantity + quantity }
+                : i
+            )
+          } else {
+            newItems = [
               ...state.items,
               {
                 productId: product.id,
@@ -54,13 +53,20 @@ export const useCartStore = create<CartState>()(
                 quantity,
                 imageUrl: product.imageUrl,
               },
-            ],
+            ]
+          }
+          return {
+            items: newItems,
+            ...calculateTotals(newItems)
           }
         })
       },
 
       removeItem: (productId) => {
-        set((state) => ({ items: state.items.filter((i) => i.productId !== productId) }))
+        set((state) => {
+          const newItems = state.items.filter((i) => i.productId !== productId)
+          return { items: newItems, ...calculateTotals(newItems) }
+        })
       },
 
       updateQuantity: (productId, quantity) => {
@@ -68,21 +74,26 @@ export const useCartStore = create<CartState>()(
           get().removeItem(productId)
           return
         }
-        set((state) => ({
-          items: state.items.map((i) =>
+        set((state) => {
+          const newItems = state.items.map((i) =>
             i.productId === productId ? { ...i, quantity } : i
-          ),
-        }))
+          )
+          return { items: newItems, ...calculateTotals(newItems) }
+        })
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], total: 0, itemCount: 0 }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
     }),
     {
       name: 'darkitchen-cart',
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({ 
+        items: state.items,
+        total: state.total,
+        itemCount: state.itemCount 
+      }),
     }
   )
 )
