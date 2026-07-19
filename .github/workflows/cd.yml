@@ -1,0 +1,105 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      catalog: ${{ steps.filter.outputs.catalog }}
+      order: ${{ steps.filter.outputs.order }}
+      chat: ${{ steps.filter.outputs.chat }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          auth:
+            - 'backend/auth-service/**'
+            - 'shared/**'
+          catalog:
+            - 'backend/catalog-service/**'
+            - 'shared/**'
+          order:
+            - 'backend/order-service/**'
+            - 'shared/**'
+          chat:
+            - 'backend/chat-service/**'
+            - 'shared/**'
+          gateway:
+            - 'backend/api-gateway/**'
+          frontend:
+            - 'frontend/**'
+            - 'shared/**'
+
+  build-and-push:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    strategy:
+      matrix:
+        service: [auth, catalog, order, chat, gateway, frontend]
+    
+    steps:
+    - name: Checkout code
+      # Solo construimos si hubo cambios en ese servicio (matrix)
+      if: needs.detect-changes.outputs[matrix.service] == 'true'
+      uses: actions/checkout@v4
+
+    - name: Log in to the Container registry
+      if: needs.detect-changes.outputs[matrix.service] == 'true'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      if: needs.detect-changes.outputs[matrix.service] == 'true'
+      run: |
+        SERVICE_PATH="backend/${{ matrix.service }}-service"
+        if [ "${{ matrix.service }}" == "gateway" ]; then
+          SERVICE_PATH="backend/api-gateway"
+        elif [ "${{ matrix.service }}" == "frontend" ]; then
+          SERVICE_PATH="frontend"
+        fi
+        
+        IMAGE_ID="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}"
+        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+        
+        docker build -t $IMAGE_ID:latest -t $IMAGE_ID:${{ github.sha }} -f $SERVICE_PATH/Dockerfile .
+        docker push $IMAGE_ID:latest
+        docker push $IMAGE_ID:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          cd /opt/darkitchen
+          docker compose pull
+          docker compose up -d
+          # Ejecutar migraciones
+          docker compose exec -T auth-service npx prisma migrate deploy
+          docker compose exec -T catalog-service npx prisma migrate deploy
+          docker compose exec -T order-service npx prisma migrate deploy
+          docker compose exec -T chat-service npx prisma migrate deploy

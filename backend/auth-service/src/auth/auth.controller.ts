@@ -75,7 +75,7 @@ export class AuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const user = req.user as { token: string; user: { id: number } };
     // Redirect to frontend with token
-    res.redirect(`http://localhost:3000/auth/callback?token=${user.token}`);
+    res.redirect(`http://localhost:5173/auth/callback?token=${user.token}`);
   }
 
   private parseUserId(userIdHeader: string): number {

@@ -1,0 +1,166 @@
+services:
+  db-auth:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_db
+    volumes:
+      - pgdata-auth:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  db-catalog:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: catalog_db
+    volumes:
+      - pgdata-catalog:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  db-orders:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: orders_db
+    volumes:
+      - pgdata-orders:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  db-chat:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: chat_db
+    volumes:
+      - pgdata-chat:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  redis-broker:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/auth-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db-auth:5432/auth_db?schema=public
+      REDIS_HOST: redis-broker
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-super-secret-key}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-super-refresh-key}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: http://localhost:4000/api/auth/google/callback
+    depends_on:
+      - db-auth
+      - redis-broker
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  catalog-service:
+    build:
+      context: .
+      dockerfile: backend/catalog-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db-catalog:5432/catalog_db?schema=public
+    depends_on:
+      - db-catalog
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: .
+      dockerfile: backend/order-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db-orders:5432/orders_db?schema=public
+      REDIS_HOST: redis-broker
+      REDIS_PORT: 6379
+      CATALOG_SERVICE_URL: http://catalog-service:4002
+    depends_on:
+      - db-orders
+      - redis-broker
+      - catalog-service
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  chat-service:
+    build:
+      context: .
+      dockerfile: backend/chat-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db-chat:5432/chat_db?schema=public
+      REDIS_HOST: redis-broker
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-super-secret-key}
+    depends_on:
+      - db-chat
+      - redis-broker
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: backend/api-gateway/Dockerfile
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-super-secret-key}
+      AUTH_SERVICE_URL: http://auth-service:4001
+      CATALOG_SERVICE_URL: http://catalog-service:4002
+      ORDER_SERVICE_URL: http://order-service:4003
+      CHAT_SERVICE_URL: http://chat-service:4004
+      CHAT_WS_URL: http://chat-service:4005
+    ports:
+      - "4000:4000"
+    depends_on:
+      - auth-service
+      - catalog-service
+      - order-service
+      - chat-service
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  pgdata-auth:
+  pgdata-catalog:
+  pgdata-orders:
+  pgdata-chat:
+  redis-data:
