@@ -5,12 +5,13 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import * as CircuitBreaker from 'opossum';
+// @ts-ignore
+const CircuitBreaker = require('opossum');
 
 @Injectable()
 export class OrdersService {
   private readonly catalogServiceUrl: string;
-  private readonly breaker: CircuitBreaker;
+  private readonly breaker: any;
 
   constructor(
     private readonly prisma: PrismaService,

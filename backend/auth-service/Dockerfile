@@ -13,6 +13,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/backend/auth-service/package.json ./backend/auth-service/
+COPY --from=builder /app/backend/auth-service/node_modules ./backend/auth-service/node_modules
 COPY --from=builder /app/backend/auth-service/dist ./backend/auth-service/dist
 COPY --from=builder /app/backend/auth-service/prisma ./backend/auth-service/prisma
 

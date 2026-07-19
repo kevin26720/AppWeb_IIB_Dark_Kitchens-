@@ -13,6 +13,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/backend/order-service/package.json ./backend/order-service/
+COPY --from=builder /app/backend/order-service/node_modules ./backend/order-service/node_modules
 COPY --from=builder /app/backend/order-service/dist ./backend/order-service/dist
 COPY --from=builder /app/backend/order-service/prisma ./backend/order-service/prisma
 

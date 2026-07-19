@@ -7,14 +7,15 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: Redis;
   private subClient: Redis;
 
-  constructor(private readonly configService: ConfigService) {}
-
-  onModuleInit() {
+  constructor(private readonly configService: ConfigService) {
     const host = this.configService.get<string>('REDIS_HOST', 'localhost');
     const port = this.configService.get<number>('REDIS_PORT', 6379);
 
     this.client = new Redis({ host, port });
     this.subClient = new Redis({ host, port });
+  }
+
+  onModuleInit() {
   }
 
   onModuleDestroy() {

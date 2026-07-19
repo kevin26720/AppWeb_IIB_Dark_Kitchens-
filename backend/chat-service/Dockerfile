@@ -13,6 +13,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/shared ./shared
 COPY --from=builder /app/backend/chat-service/package.json ./backend/chat-service/
+COPY --from=builder /app/backend/chat-service/node_modules ./backend/chat-service/node_modules
 COPY --from=builder /app/backend/chat-service/dist ./backend/chat-service/dist
 COPY --from=builder /app/backend/chat-service/prisma ./backend/chat-service/prisma
 

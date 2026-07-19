@@ -10,5 +10,6 @@ FROM nginx:alpine
 # Copiamos la compilación generada por Vite
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 # Copiamos una configuración de Nginx básica si la hubiese (opcional)
+COPY --from=builder /app/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
