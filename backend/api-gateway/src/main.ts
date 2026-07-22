@@ -90,6 +90,8 @@ async function bootstrap() {
     }),
   );
 
+
+
   // Catalogo expone productos y categorias para la UI y para validar pedidos.
   app.use(
     '/api/products',
