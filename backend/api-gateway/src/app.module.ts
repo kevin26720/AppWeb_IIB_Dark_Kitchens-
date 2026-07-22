@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -7,6 +8,7 @@ import { AppController } from './app.controller';
 
 @Module({
   imports: [
+    PrometheusModule.register(),
     // Configuracion global para leer variables de entorno desde un solo lugar.
     ConfigModule.forRoot({ isGlobal: true }),
     // Limita el trafico del gateway para reducir abuso y errores por exceso de llamadas.

@@ -1,4 +1,7 @@
+import './tracing';
 import { NestFactory } from '@nestjs/core';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 import { ValidationPipe, UnauthorizedException } from '@nestjs/common';
 import helmet from 'helmet';
 import { createProxyMiddleware } from 'http-proxy-middleware';
@@ -9,7 +12,18 @@ import { Request, Response, NextFunction } from 'express';
 async function bootstrap() {
   // El gateway es la unica puerta de entrada publica: aqui se centralizan validacion,
   // seguridad, CORS y el enrutamiento hacia los microservicios internos.
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json()
+          ),
+        }),
+      ],
+    }),
+  });
 
   // Rechaza campos desconocidos y transforma tipos antes de que el request llegue a los servicios.
   app.useGlobalPipes(

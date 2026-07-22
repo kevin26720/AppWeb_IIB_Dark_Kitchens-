@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'nestjs-services'
+    static_configs:
+      - targets:
+        - 'auth-service:4001'
+        - 'catalog-service:4002'
+        - 'order-service:4003'
+        - 'chat-service:4004'
+        - 'api-gateway:4000'
