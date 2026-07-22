@@ -23,6 +23,7 @@ import { Request, Response } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // Registro y acceso son solo fachadas HTTP; la logica real vive en AuthService.
   @Post('register')
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
@@ -39,12 +40,14 @@ export class AuthController {
     return this.authService.refresh(userId);
   }
 
+  // El perfil se resuelve con la identidad que el gateway inyecto en los headers.
   @Get('profile')
   async getProfile(@Headers('x-user-id') userIdHeader: string) {
     const userId = this.parseUserId(userIdHeader);
     return this.authService.getProfile(userId);
   }
 
+  // Solo administradores pueden listar todos los usuarios.
   @Get('users')
   async getAllUsers(@Headers('x-user-role') roleHeader: string) {
     if (roleHeader !== 'ADMIN') {
@@ -80,12 +83,14 @@ export class AuthController {
     return this.authService.verifyEmail(token);
   }
 
+  // GoogleAuthGuard redirige al flujo OAuth de Google.
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
     // Guard redirects to Google
   }
 
+  // La callback recibe el usuario validado y redirige al frontend con el JWT.
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleCallback(@Req() req: Request, @Res() res: Response) {
@@ -95,6 +100,7 @@ export class AuthController {
   }
 
   private parseUserId(userIdHeader: string): number {
+    // Los headers del gateway viajan como texto; aqui se validan antes de usar la BD.
     if (!userIdHeader) {
       throw new HttpException(
         'Missing X-User-Id header',

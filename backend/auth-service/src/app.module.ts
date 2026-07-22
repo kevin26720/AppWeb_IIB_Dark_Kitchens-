@@ -6,9 +6,13 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
+    // Variables de entorno compartidas por auth, correo, Redis y JWT.
     ConfigModule.forRoot({ isGlobal: true }),
+    // Prisma conecta con la base de datos del servicio auth.
     PrismaModule,
+    // Redis se usa para publicar eventos de auditoria y posibles notificaciones.
     RedisModule,
+    // Aqui vive toda la logica de autenticacion y autorizacion.
     AuthModule,
   ],
 })

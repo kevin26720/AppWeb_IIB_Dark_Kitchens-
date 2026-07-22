@@ -3,8 +3,10 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  // Este servicio concentra identidad, login, recuperacion de acceso y verificacion de correo.
   const app = await NestFactory.create(AppModule);
 
+  // Valida los DTOs de autenticacion antes de entrar al dominio.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

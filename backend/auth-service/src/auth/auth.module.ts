@@ -10,7 +10,9 @@ import { EmailService } from './email.service';
 
 @Module({
   imports: [
+    // Passport habilita estrategias de login local y Google.
     PassportModule,
+    // JWT se configura de forma asincrona para leer secretos y expiracion desde env.
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -22,6 +24,7 @@ import { EmailService } from './email.service';
       }),
     }),
   ],
+  // AuthService contiene la logica de negocio; las estrategias solo autentican la entrada.
   providers: [AuthService, JwtStrategy, GoogleStrategy, EmailService],
   controllers: [AuthController],
   exports: [AuthService],
