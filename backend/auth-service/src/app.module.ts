@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { LoggerMiddleware } from './logger.middleware';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
@@ -18,4 +19,8 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     AuthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
