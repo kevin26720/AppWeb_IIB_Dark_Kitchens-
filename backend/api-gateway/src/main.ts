@@ -7,8 +7,11 @@ import { JwtService } from '@nestjs/jwt';
 import { Request, Response, NextFunction } from 'express';
 
 async function bootstrap() {
+  // El gateway es la unica puerta de entrada publica: aqui se centralizan validacion,
+  // seguridad, CORS y el enrutamiento hacia los microservicios internos.
   const app = await NestFactory.create(AppModule);
 
+  // Rechaza campos desconocidos y transforma tipos antes de que el request llegue a los servicios.
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,16 +33,16 @@ async function bootstrap() {
   const jwtService = app.get(JwtService);
   const jwtSecret = process.env.JWT_SECRET || 'darkitchen-super-secret-jwt-key-2026';
 
-  // JWT Middleware to parse and inject X-User-Id and X-User-Role
+  // Traduce el JWT del cliente a headers internos que entienden los microservicios.
   app.use((req: Request, res: Response, next: NextFunction) => {
-    // Only check internal routes, not OAuth callbacks or public assets
+    // Solo intercepta rutas del API; evita tocar callbacks y recursos publicos.
     if (req.path.startsWith('/api/')) {
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7);
         try {
           const decoded = jwtService.verify(token, { secret: jwtSecret });
-          // Inject headers for internal services
+          // Inyecta identidad y rol para autorizacion interna entre servicios.
           req.headers['x-user-id'] = decoded.sub.toString();
           if (decoded.role) {
             req.headers['x-user-role'] = decoded.role;
@@ -55,7 +58,7 @@ async function bootstrap() {
     next();
   });
 
-  // Services URLs
+  // Cada servicio vive aislado y el gateway solo decide a donde enviar cada ruta.
   const authUrl = process.env.AUTH_SERVICE_URL || 'http://localhost:4001';
   const catalogUrl = process.env.CATALOG_SERVICE_URL || 'http://localhost:4002';
   const orderUrl = process.env.ORDER_SERVICE_URL || 'http://localhost:4003';
@@ -63,6 +66,7 @@ async function bootstrap() {
   const chatWsUrl = process.env.CHAT_WS_URL || 'http://localhost:4005';
 
   // Proxies
+  // Auth concentra registro, login, perfil y recuperacion de acceso.
   app.use(
     '/api/auth',
     createProxyMiddleware({
@@ -72,6 +76,7 @@ async function bootstrap() {
     }),
   );
 
+  // Catalogo expone productos y categorias para la UI y para validar pedidos.
   app.use(
     '/api/products',
     createProxyMiddleware({
@@ -81,6 +86,7 @@ async function bootstrap() {
     }),
   );
 
+  // Orders maneja la creacion y consulta de pedidos.
   app.use(
     '/api/orders',
     createProxyMiddleware({
@@ -90,6 +96,7 @@ async function bootstrap() {
     }),
   );
 
+  // Chat usa HTTP para historial y socket.io para tiempo real.
   app.use(
     '/api/messages',
     createProxyMiddleware({
@@ -99,6 +106,7 @@ async function bootstrap() {
     }),
   );
   
+  // El websocket se proxya aparte para mantener la conexion persistente de Socket.IO.
   app.use(
     '/socket.io',
     createProxyMiddleware({

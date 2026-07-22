@@ -7,11 +7,14 @@ import { AppController } from './app.controller';
 
 @Module({
   imports: [
+    // Configuracion global para leer variables de entorno desde un solo lugar.
     ConfigModule.forRoot({ isGlobal: true }),
+    // Limita el trafico del gateway para reducir abuso y errores por exceso de llamadas.
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100, // 100 req per minute globally
     }]),
+    // El gateway necesita firmar y verificar JWT antes de reenviar requests.
     JwtModule.register({}),
   ],
   controllers: [AppController],
