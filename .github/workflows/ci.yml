@@ -37,3 +37,9 @@ jobs:
 
     - name: Run Tests
       run: npm run test
+
+    - name: Publish CI Summary
+      if: success()
+      run: |
+        echo "### 🎉 CI Pipeline Exitoso!" >> $GITHUB_STEP_SUMMARY
+        echo "Todos los pasos (Instalación, Lint, Typecheck y Tests) se completaron correctamente." >> $GITHUB_STEP_SUMMARY
