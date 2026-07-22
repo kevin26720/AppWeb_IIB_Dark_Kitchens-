@@ -45,6 +45,7 @@ async function bootstrap() {
             req.headers['x-user-role'] = decoded.role;
           }
         } catch (e) {
+          console.error('JWT Verification failed:', e.message);
           // Token is invalid or expired
           // Don't throw immediately, let the internal service decide if the route is public or private
           // The proxy will forward without the headers
@@ -67,7 +68,7 @@ async function bootstrap() {
     createProxyMiddleware({
       target: authUrl,
       changeOrigin: true,
-      pathRewrite: { '^/api/auth': '/auth' },
+      pathRewrite: { '^/': '/auth/' },
     }),
   );
 
@@ -76,7 +77,7 @@ async function bootstrap() {
     createProxyMiddleware({
       target: catalogUrl,
       changeOrigin: true,
-      pathRewrite: { '^/api/products': '/products' },
+      pathRewrite: { '^/': '/products/' },
     }),
   );
 
@@ -85,7 +86,7 @@ async function bootstrap() {
     createProxyMiddleware({
       target: orderUrl,
       changeOrigin: true,
-      pathRewrite: { '^/api/orders': '/orders' },
+      pathRewrite: { '^/': '/orders/' },
     }),
   );
 
@@ -94,7 +95,7 @@ async function bootstrap() {
     createProxyMiddleware({
       target: chatUrl,
       changeOrigin: true,
-      pathRewrite: { '^/api/messages': '/messages' },
+      pathRewrite: { '^/': '/messages/' },
     }),
   );
   

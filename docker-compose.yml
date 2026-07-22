@@ -5,6 +5,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432"
     volumes:
       - pgdata-auth:/var/lib/postgresql/data
     networks:
@@ -17,6 +19,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: catalog_db
+    ports:
+      - "5434:5432"
     volumes:
       - pgdata-catalog:/var/lib/postgresql/data
     networks:
@@ -29,6 +33,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: orders_db
+    ports:
+      - "5435:5432"
     volumes:
       - pgdata-orders:/var/lib/postgresql/data
     networks:
@@ -41,6 +47,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: chat_db
+    ports:
+      - "5436:5432"
     volumes:
       - pgdata-chat:/var/lib/postgresql/data
     networks:

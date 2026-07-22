@@ -45,6 +45,14 @@ export class AuthController {
     return this.authService.getProfile(userId);
   }
 
+  @Get('users')
+  async getAllUsers(@Headers('x-user-role') roleHeader: string) {
+    if (roleHeader !== 'ADMIN') {
+      throw new HttpException('Only admins can access all users', HttpStatus.FORBIDDEN);
+    }
+    return this.authService.getAllUsers();
+  }
+
   @Post('change-password')
   async changePassword(
     @Headers('x-user-id') userIdHeader: string,

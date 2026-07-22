@@ -113,7 +113,7 @@ function OAuthCallbackPage() {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
-      setAuth({ token, user: { id: payload.id, email: payload.email, name: payload.name, role: payload.role } })
+      setAuth({ token, user: { id: payload.sub || payload.id, email: payload.email, name: payload.name || payload.email?.split('@')[0] || 'Usuario', role: payload.role } })
     } catch {
       // token inválido
     }

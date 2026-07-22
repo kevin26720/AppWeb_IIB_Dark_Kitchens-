@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, FormEvent } from 'react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
-import { getProducts, getCategories } from '@/api/catalog.api'
+import { getProducts, getCategories, createProduct, updateProduct, deleteProduct } from '@/api/catalog.api'
 import type { Product } from '@darkitchen/shared'
 import styles from './AdminProducts.module.css'
 
@@ -9,7 +9,24 @@ export function AdminProducts() {
   const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  // Modal states
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+
+  // Form states
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    category: '',
+    imageUrl: '',
+    available: true
+  })
+
+  const loadData = () => {
+    setLoading(true)
     Promise.all([
       getProducts({ limit: 100 }),
       getCategories()
@@ -17,7 +34,105 @@ export function AdminProducts() {
       setProducts(resProducts.data)
       setCategories(resCategories)
     }).finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadData()
   }, [])
+
+  const handleOpenForm = (product?: Product) => {
+    if (product) {
+      setSelectedProduct(product)
+      setFormData({
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        category: product.category,
+        imageUrl: product.imageUrl || '',
+        available: product.available
+      })
+    } else {
+      setSelectedProduct(null)
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        category: categories.length > 0 ? categories[0] : '',
+        imageUrl: '',
+        available: true
+      })
+    }
+    setIsFormModalOpen(true)
+  }
+
+  const handleCloseForm = () => {
+    setIsFormModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  const handleOpenDelete = (product: Product) => {
+    setSelectedProduct(product)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleCloseDelete = () => {
+    setIsDeleteModalOpen(false)
+    setSelectedProduct(null)
+  }
+
+  // Toast state
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' } | null>(null)
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const handleFormSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+    
+    // Cleanup empty strings for optional URL validation
+    const payload: any = { ...formData }
+    if (!payload.imageUrl || payload.imageUrl.trim() === '') {
+      payload.imageUrl = undefined
+    }
+
+    try {
+      if (selectedProduct) {
+        await updateProduct(selectedProduct.id, payload)
+        showToast('Producto actualizado correctamente', 'success')
+      } else {
+        await createProduct(payload)
+        showToast('Producto creado correctamente', 'success')
+      }
+      handleCloseForm()
+      loadData()
+    } catch (err: any) {
+      console.error('Error saving product', err)
+      const errorMsg = err.message || 'Hubo un error al guardar el producto'
+      showToast(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg, 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedProduct) return
+    setSubmitting(true)
+    try {
+      await deleteProduct(selectedProduct.id)
+      showToast('Producto eliminado', 'info')
+      handleCloseDelete()
+      loadData()
+    } catch (err: any) {
+      console.error('Error deleting product', err)
+      const errorMsg = err.message || 'Hubo un error al eliminar el producto'
+      showToast(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg, 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className={styles.adminLayout}>
@@ -28,7 +143,7 @@ export function AdminProducts() {
             <h1 className="headline-lg" style={{ color: 'var(--color-text-primary)' }}>Gestión de Productos</h1>
             <p className="body-md" style={{ color: 'var(--color-text-muted)' }}>Administra el catálogo y la disponibilidad</p>
           </div>
-          <button className="btn btn-primary" id="btn-new-product">
+          <button className="btn btn-primary" id="btn-new-product" onClick={() => handleOpenForm()}>
             <span className="material-symbols-outlined">add</span>
             Nuevo Producto
           </button>
@@ -87,10 +202,10 @@ export function AdminProducts() {
                     </td>
                     <td align="right">
                       <div className={styles.actionButtons}>
-                        <button className="btn btn-icon btn-ghost" title="Editar" id={`btn-edit-${product.id}`}>
+                        <button className="btn btn-icon btn-ghost" title="Editar" id={`btn-edit-${product.id}`} onClick={() => handleOpenForm(product)}>
                           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>edit</span>
                         </button>
-                        <button className="btn btn-icon btn-ghost" style={{ color: 'var(--color-error)' }} title="Eliminar" id={`btn-delete-${product.id}`}>
+                        <button className="btn btn-icon btn-ghost" style={{ color: 'var(--color-error)' }} title="Eliminar" id={`btn-delete-${product.id}`} onClick={() => handleOpenDelete(product)}>
                           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>delete</span>
                         </button>
                       </div>
@@ -102,6 +217,131 @@ export function AdminProducts() {
           </div>
         )}
       </main>
+
+      {/* MODAL DE FORMULARIO DE PRODUCTO */}
+      {isFormModalOpen && (
+        <>
+          <div className="overlay" onClick={handleCloseForm} />
+          <div className="modal">
+            <h2 className="headline-md" style={{ marginBottom: 20 }}>
+              {selectedProduct ? 'Editar Producto' : 'Nuevo Producto'}
+            </h2>
+            <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="input-group">
+                <label className="input-label">Nombre</label>
+                <input 
+                  type="text" 
+                  required 
+                  className="input-field" 
+                  value={formData.name} 
+                  onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Descripción</label>
+                <textarea 
+                  required 
+                  className="input-field" 
+                  rows={3}
+                  value={formData.description} 
+                  onChange={e => setFormData({ ...formData, description: e.target.value })} 
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label className="input-label">Precio ($)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    required 
+                    className="input-field" 
+                    value={formData.price} 
+                    onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })} 
+                  />
+                </div>
+                <div className="input-group" style={{ flex: 1 }}>
+                  <label className="input-label">Categoría</label>
+                  <select 
+                    className="input-field"
+                    required
+                    value={formData.category}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    <option value="" disabled>Selecciona...</option>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    {/* Allow new categories indirectly or just rely on existing if required */}
+                    {!categories.includes(formData.category) && formData.category && (
+                      <option value={formData.category}>{formData.category}</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+              <div className="input-group">
+                <label className="input-label">URL de Imagen (Opcional)</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={formData.imageUrl} 
+                  onChange={e => setFormData({ ...formData, imageUrl: e.target.value })} 
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                <input 
+                  type="checkbox" 
+                  id="chk-available" 
+                  checked={formData.available}
+                  onChange={e => setFormData({ ...formData, available: e.target.checked })}
+                  style={{ width: 20, height: 20 }}
+                />
+                <label htmlFor="chk-available" style={{ cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                  Producto disponible para la venta
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+                <button type="button" className="btn btn-secondary" onClick={handleCloseForm} disabled={submitting}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN ELIMINAR */}
+      {isDeleteModalOpen && selectedProduct && (
+        <>
+          <div className="overlay" onClick={handleCloseDelete} />
+          <div className="modal">
+            <h2 className="headline-md" style={{ marginBottom: 16 }}>Confirmar Eliminación</h2>
+            <p className="body-md">
+              ¿Estás seguro que deseas eliminar el producto <strong>{selectedProduct.name}</strong>?
+              Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 32 }}>
+              <button type="button" className="btn btn-secondary" onClick={handleCloseDelete} disabled={submitting}>
+                Cancelar
+              </button>
+              <button type="button" className="btn btn-danger" onClick={handleDeleteConfirm} disabled={submitting}>
+                {submitting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* TOAST NOTIFICATION */}
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.type === 'success' && <span className="material-symbols-outlined" style={{ color: 'var(--color-secondary)' }}>check_circle</span>}
+          {toast.type === 'error' && <span className="material-symbols-outlined" style={{ color: 'var(--color-error)' }}>error</span>}
+          {toast.type === 'info' && <span className="material-symbols-outlined" style={{ color: 'var(--color-primary)' }}>info</span>}
+          <span>{toast.message}</span>
+        </div>
+      )}
     </div>
   )
 }

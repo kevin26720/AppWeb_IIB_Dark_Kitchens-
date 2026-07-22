@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   Headers,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -51,6 +52,7 @@ export class ProductsController {
     @Headers('x-user-role') role: string,
     @Body() dto: CreateProductDto,
   ) {
+    if (!role) throw new UnauthorizedException('Authentication required');
     if (role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can create products');
     }
@@ -63,6 +65,7 @@ export class ProductsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProductDto,
   ) {
+    if (!role) throw new UnauthorizedException('Authentication required');
     if (role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can update products');
     }
@@ -74,6 +77,7 @@ export class ProductsController {
     @Headers('x-user-role') role: string,
     @Param('id', ParseIntPipe) id: number,
   ) {
+    if (!role) throw new UnauthorizedException('Authentication required');
     if (role !== 'ADMIN') {
       throw new ForbiddenException('Only admins can delete products');
     }

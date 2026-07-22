@@ -10,11 +10,14 @@ export const Navbar = () => {
   const { itemCount, toggleCart } = useCartStore()
   const location = useLocation()
   const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false)
 
   const isActive = (path: string) => location.pathname === path
 
   const handleLogout = () => {
+    setUserDropdownOpen(false)
+    setMobileMenuOpen(false)
     logout()
     navigate('/')
   }
@@ -65,7 +68,7 @@ export const Navbar = () => {
             <div className={styles.userMenu}>
               <button
                 className={styles.userBtn}
-                onClick={() => setMenuOpen(!menuOpen)}
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 id="user-menu-btn"
               >
                 <div className={styles.avatar}>
@@ -73,11 +76,11 @@ export const Navbar = () => {
                 </div>
                 <span className={styles.userName}>{user?.name.split(' ')[0]}</span>
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-                  {menuOpen ? 'expand_less' : 'expand_more'}
+                  {userDropdownOpen ? 'expand_less' : 'expand_more'}
                 </span>
               </button>
 
-              {menuOpen && (
+              {userDropdownOpen && (
                 <div className={styles.dropdown}>
                   <div className={styles.dropdownHeader}>
                     <p className="body-sm" style={{ color: 'var(--color-text-muted)' }}>{user?.email}</p>
@@ -103,30 +106,30 @@ export const Navbar = () => {
           {/* Mobile menu toggle */}
           <button
             className={styles.mobileMenuBtn}
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Menú"
             id="mobile-menu-btn"
           >
-            <span className="material-symbols-outlined">{menuOpen ? 'close' : 'menu'}</span>
+            <span className="material-symbols-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
+      {mobileMenuOpen && (
         <div className={styles.mobileMenu}>
-          <Link to="/" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Inicio</Link>
-          <Link to="/catalog" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Catálogo</Link>
+          <Link to="/" className={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Inicio</Link>
+          <Link to="/catalog" className={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Catálogo</Link>
           {isAuthenticated && user?.role === Role.CLIENT && (
             <>
-              <Link to="/orders" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Mis Pedidos</Link>
-              <Link to="/chat" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Chat</Link>
+              <Link to="/orders" className={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Mis Pedidos</Link>
+              <Link to="/chat" className={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Chat</Link>
             </>
           )}
           {!isAuthenticated && (
             <>
-              <Link to="/login" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Iniciar sesión</Link>
-              <Link to="/register" className={styles.mobileLink} onClick={() => setMenuOpen(false)}>Registrarse</Link>
+              <Link to="/login" className={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Iniciar sesión</Link>
+              <Link to="/register" className={styles.mobileLink} onClick={() => setMobileMenuOpen(false)}>Registrarse</Link>
             </>
           )}
         </div>

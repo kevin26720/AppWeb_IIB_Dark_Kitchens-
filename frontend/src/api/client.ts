@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/store/authStore'
 
 export const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000',
+  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/api\/?$/, '').replace(/\/$/, '') + '/api',
   timeout: 15000,
 })
 

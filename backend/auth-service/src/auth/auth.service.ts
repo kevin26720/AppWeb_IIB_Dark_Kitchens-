@@ -122,6 +122,14 @@ export class AuthService {
     return this.mapToUserPayload(user);
   }
 
+  // ─── GET ALL USERS ────────────────────────────────────
+  async getAllUsers(): Promise<UserPayload[]> {
+    const users = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return users.map(user => this.mapToUserPayload(user));
+  }
+
   // ─── CHANGE PASSWORD ─────────────────────────────────
   async changePassword(userId: number, dto: ChangePasswordDto): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({

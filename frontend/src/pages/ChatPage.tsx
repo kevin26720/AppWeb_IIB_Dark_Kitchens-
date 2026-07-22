@@ -1,25 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { Message } from '@darkitchen/shared'
-import { mockGetMessages, mockSendMessage } from '@/api/mock/chat.mock'
-import { useAuthStore } from '@/store/authStore'
-import { useChatStore } from '@/store/chatStore'
-import styles from './ChatPage.module.css'
 
-// ─── Respuestas automáticas del chef ───
-const CHEF_REPLIES = [
-  '¡Claro! Puedo ayudarte con eso. 🍽️',
-  'Excelente elección. Ese plato es uno de nuestros favoritos.',
-  '¿Tienes alguna restricción dietética que deba tener en cuenta?',
-  'Para pedidos corporativos, recomendamos nuestro menú ejecutivo.',
-  'Perfecto, anotado. ¿Algo más en lo que pueda ayudarte?',
-  'Ese plato toma aproximadamente 25 minutos en prepararse. ¿Lo deseas así?',
-  '¡Gracias por tu preferencia! Trabajamos con ingredientes frescos cada día.',
-  'Podemos personalizar ese plato según tus gustos. ¿Cuál es tu preferencia?',
-]
-
-function randomChefReply(): string {
-  return CHEF_REPLIES[Math.floor(Math.random() * CHEF_REPLIES.length)]
-}
 
 function formatTime(isoString: string): string {
   const d = new Date(isoString)
@@ -36,6 +17,11 @@ function formatDateSeparator(isoString: string): string {
   if (d.toDateString() === yesterday.toDateString()) return 'Ayer'
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
 }
+
+import { getMessages } from '@/api/chat.api'
+import { useAuthStore } from '@/store/authStore'
+import { useChatStore } from '@/store/chatStore'
+import styles from './ChatPage.module.css'
 
 // ─── Chat Bubble ───
 interface BubbleProps {
@@ -66,10 +52,13 @@ export function ChatPage() {
     messages,
     isTyping,
     setRoom,
-    addMessage,
-    setMessages,
-    setTyping,
+    sendMessage,
+    sendTyping,
+    connect,
+    disconnect,
     markAsRead,
+    setMessages,
+    isConnected,
   } = useChatStore()
 
   const [inputValue, setInputValue]   = useState('')
@@ -82,15 +71,20 @@ export function ChatPage() {
   // La sala del cliente
   const roomId = user ? `room_client_${user.id}` : 'room_client_2'
 
-  // Cargar mensajes al montar
+  // Conectar y unirse a sala
   useEffect(() => {
+    const token = useAuthStore.getState().token
+    if (token) {
+      connect(token)
+    }
     setRoom(roomId)
     markAsRead()
-    mockGetMessages(roomId)
-      .then((msgs) => setMessages(msgs))
-      .catch(() => {})
-      .finally(() => setIsLoading(false))
-  }, [roomId, setRoom, markAsRead, setMessages])
+    getMessages(roomId).then(setMessages).catch(() => {}).finally(() => setIsLoading(false))
+
+    return () => {
+      disconnect()
+    }
+  }, [roomId, connect, disconnect, setRoom, markAsRead, setMessages])
 
   // Scroll al último mensaje
   const scrollToBottom = useCallback(() => {
@@ -110,32 +104,28 @@ export function ChatPage() {
     setIsSending(true)
 
     try {
-      const sent = await mockSendMessage(content, roomId, user.id, user.name ?? user.email)
-      addMessage(sent)
+      sendMessage(content, roomId)
     } catch {
       // silencio
     } finally {
       setIsSending(false)
     }
-
-    // Simular respuesta del chef
-    setTimeout(() => {
-      setTyping('Chef Admin')
-    }, 500)
-
-    setTimeout(() => {
-      setTyping(null)
-      const chefMsg: Message = {
-        id: Date.now(),
-        content: randomChefReply(),
-        userId: 1,
-        userName: 'Chef Admin',
-        room: roomId,
-        createdAt: new Date().toISOString(),
-      }
-      addMessage(chefMsg)
-    }, 2000)
   }
+
+  // Typing indicator broadcast
+  useEffect(() => {
+    if (inputValue.trim().length > 0) {
+      sendTyping(roomId, true)
+    } else {
+      sendTyping(roomId, false)
+    }
+    
+    const timeout = setTimeout(() => {
+      sendTyping(roomId, false)
+    }, 3000)
+
+    return () => clearTimeout(timeout)
+  }, [inputValue, roomId, sendTyping])
 
   // Tecla Enter para enviar
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -200,8 +190,7 @@ export function ChatPage() {
           <div className={styles.chefInfo}>
             <p className={styles.chefName}>Equipo Darkitchen</p>
             <p className={styles.chefStatus}>
-              <span className="live-dot" style={{ width: 7, height: 7, flexShrink: 0 }} />
-              En línea ahora
+              Activo
             </p>
           </div>
         </div>
@@ -247,17 +236,16 @@ export function ChatPage() {
             <div>
               <p className={styles.headerChefName}>Equipo Darkitchen</p>
               <p className={styles.headerChefStatus}>
-                <span className="live-dot" style={{ width: 7, height: 7 }} />
-                Activo · Responde en minutos
+                Activo
               </p>
             </div>
           </div>
           <span
-            className="badge badge-green"
+            className={`badge ${isConnected ? 'badge-green' : 'badge-red'}`}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <span className="live-dot" style={{ width: 8, height: 8 }} />
-            Conectado
+            <span className="live-dot" style={{ width: 8, height: 8, backgroundColor: isConnected ? '' : 'var(--color-error)' }} />
+            {isConnected ? 'Conectado' : 'Desconectado'}
           </span>
         </div>
 
@@ -291,11 +279,10 @@ export function ChatPage() {
           {/* Typing indicator */}
           {isTyping && (
             <div className={styles.typingIndicator}>
-              <div className={styles.typingBubble}>
-                <span className={styles.typingText}>Chef está escribiendo</span>
-                <span className={styles.typingDot} />
-                <span className={styles.typingDot} />
-                <span className={styles.typingDot} />
+              <div className={styles.typingBubble} style={{ padding: '16px 20px', gap: '4px' }}>
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
               </div>
             </div>
           )}

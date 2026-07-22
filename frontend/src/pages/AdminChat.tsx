@@ -1,56 +1,90 @@
 import { useEffect, useState, useRef } from 'react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
-import { mockGetConversations, mockGetMessages, mockSendMessage } from '@/api/mock/chat.mock'
+import { getConversations, getMessages } from '@/api/chat.api'
 import { useAuthStore } from '@/store/authStore'
-import type { Message, ChatRoom } from '@darkitchen/shared'
+import { useChatStore } from '@/store/chatStore'
+import type { ChatRoom } from '@darkitchen/shared'
 import styles from './AdminChat.module.css'
 
 export function AdminChat() {
-  const { user } = useAuthStore()
+  const { user, token } = useAuthStore()
+  const {
+    messages,
+    setRoom,
+    sendMessage,
+    sendTyping,
+    connect,
+    disconnect,
+    isTyping,
+    setMessages,
+  } = useChatStore()
+
   const [conversations, setConversations] = useState<ChatRoom[]>([])
   const [activeRoom, setActiveRoom] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Connect on mount
   useEffect(() => {
-    mockGetConversations().then(setConversations)
+    if (token) {
+      connect(token)
+    }
+    return () => {
+      disconnect()
+    }
+  }, [token, connect, disconnect])
+
+  // Load conversations
+  useEffect(() => {
+    getConversations()
+      .then(setConversations)
+      .catch((err) => console.error('Failed to get conversations:', err))
   }, [])
 
+  // Change active room
   useEffect(() => {
     if (activeRoom) {
-      mockGetMessages(activeRoom).then(setMessages)
+      setRoom(activeRoom)
+      getMessages(activeRoom)
+        .then(setMessages)
+        .catch(err => console.error('Failed to get messages:', err))
     }
-  }, [activeRoom])
+  }, [activeRoom, setRoom, setMessages])
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Handle typing indicator broadcast
+  useEffect(() => {
+    if (!activeRoom) return
+    
+    if (inputMessage.trim().length > 0) {
+      sendTyping(activeRoom, true)
+    } else {
+      sendTyping(activeRoom, false)
+    }
+    
+    const timeout = setTimeout(() => {
+      sendTyping(activeRoom, false)
+    }, 3000)
+
+    return () => clearTimeout(timeout)
+  }, [inputMessage, activeRoom, sendTyping])
+
+  const handleSendMessage = async (e?: any) => {
+    if (e?.preventDefault) e.preventDefault()
     if (!inputMessage.trim() || !activeRoom || !user) return
 
     const content = inputMessage.trim()
     setInputMessage('')
     
-    // Add local message immediately
-    const tempMsg: Message = {
-      id: Date.now(),
-      content,
-      userId: user.id,
-      userName: user.name,
-      room: activeRoom,
-      createdAt: new Date().toISOString()
-    }
-    setMessages(prev => [...prev, tempMsg])
+    const ta = document.getElementById('admin-chat-textarea')
+    if (ta) ta.style.height = 'auto'
 
-    // Send to mock backend
-    await mockSendMessage(content, activeRoom, user.id, user.name)
-    const updatedMessages = await mockGetMessages(activeRoom)
-    setMessages(updatedMessages)
+    sendMessage(content, activeRoom)
   }
 
   const formatTime = (isoString: string) => {
@@ -72,6 +106,9 @@ export function AdminChat() {
             </div>
             
             <div className={styles.conversationsList}>
+              {conversations.length === 0 ? (
+                 <p style={{ padding: 16, color: 'var(--color-text-muted)' }}>No hay conversaciones aún.</p>
+              ) : null}
               {conversations.map(conv => (
                 <div 
                   key={conv.room}
@@ -80,6 +117,7 @@ export function AdminChat() {
                 >
                   <div className={styles.convAvatar}>
                     <span className="material-symbols-outlined">person</span>
+                    <span className={styles.headerOnlineDot} />
                   </div>
                   <div className={styles.convDetails}>
                     <p className="body-sm" style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>{conv.room}</p>
@@ -101,23 +139,23 @@ export function AdminChat() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div className={styles.headerAvatar}>
                       <span className="material-symbols-outlined">person</span>
+                      <span className={styles.headerOnlineDot} />
                     </div>
                     <div>
-                      <h3 className="headline-sm" style={{ color: 'var(--color-text-primary)' }}>{activeRoom}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div className="live-dot" />
-                        <span className="label-md" style={{ color: 'var(--color-secondary)' }}>Cliente en línea</span>
-                      </div>
+                      <p style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '1rem', margin: 0 }}>{activeRoom}</p>
+                      <p style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, margin: 0, fontSize: '0.75rem', color: 'var(--color-secondary)', fontWeight: 500 }}>
+                        Activo
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div className={styles.messagesArea}>
                   <div className={styles.dateDivider}>
-                    <span>Hoy</span>
+                    <span>Conversación Activa</span>
                   </div>
                   
-                  {messages.map((msg, index) => {
+                  {messages.map((msg) => {
                     const isAdmin = msg.userId === user?.id
                     return (
                       <div key={msg.id} className={`${styles.messageWrapper} ${isAdmin ? styles.wrapperAdmin : styles.wrapperClient}`}>
@@ -146,23 +184,41 @@ export function AdminChat() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <form className={styles.inputArea} onSubmit={handleSendMessage}>
-                  <input
-                    type="text"
-                    className="input-field"
-                    placeholder="Escribe un mensaje al cliente..."
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    style={{ background: 'var(--color-surface-container)', border: 'none' }}
-                  />
-                  <button 
-                    type="submit" 
-                    className="btn btn-icon btn-primary"
-                    disabled={!inputMessage.trim()}
-                  >
-                    <span className="material-symbols-outlined">send</span>
-                  </button>
-                </form>
+                <div className={styles.inputArea} style={{ flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                    <textarea
+                      id="admin-chat-textarea"
+                      className="input-field"
+                      placeholder="Escribe un mensaje al cliente..."
+                      value={inputMessage}
+                      onChange={(e) => {
+                        setInputMessage(e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage(e);
+                        }
+                      }}
+                      rows={1}
+                      style={{ background: 'var(--color-surface-container-lowest)', border: 'none', resize: 'none', overflowY: 'auto' }}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={handleSendMessage}
+                      className="btn btn-icon btn-primary"
+                      disabled={!inputMessage.trim()}
+                      style={{ alignSelf: 'flex-end', flexShrink: 0 }}
+                    >
+                      <span className="material-symbols-outlined">send</span>
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', margin: 0, textAlign: 'center' }}>
+                    Presiona <kbd style={{ padding: '1px 5px', borderRadius: 3, background: 'var(--color-surface-container-high)', fontSize: '0.7rem' }}>Enter</kbd> para enviar · Shift+Enter para nueva línea
+                  </p>
+                </div>
               </>
             ) : (
               <div className={styles.emptyState}>
@@ -178,3 +234,4 @@ export function AdminChat() {
     </div>
   )
 }
+

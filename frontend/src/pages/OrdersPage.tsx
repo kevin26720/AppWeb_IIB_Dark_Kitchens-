@@ -320,16 +320,11 @@ export function OrdersPage() {
 
       {/* Contenido */}
       <div className={styles.content}>
-        {/* Banner de éxito */}
+        {/* TOAST NOTIFICATION */}
         {lastCreated && (
-          <div className={styles.successBanner} role="alert">
-            <span className={styles.successIcon}>🎉</span>
-            <div className={styles.successText}>
-              <p className={styles.successTitle}>¡Pedido #{lastCreated.id} confirmado!</p>
-              <p className={styles.successSubtitle}>
-                Tu pedido está siendo procesado. Recibirás actualizaciones pronto.
-              </p>
-            </div>
+          <div className="toast toast-success" role="alert">
+            <span className="material-symbols-outlined" style={{ color: 'var(--color-secondary)' }}>check_circle</span>
+            <span>¡Pedido #{lastCreated.id} confirmado!</span>
           </div>
         )}
 

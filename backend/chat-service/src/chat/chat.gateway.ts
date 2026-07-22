@@ -63,6 +63,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const payload = jwt.verify(tokenValue as string, secret) as jwt.JwtPayload;
       client.data.user = payload;
     } catch (error) {
+      console.error('Socket authentication error:', error);
       client.disconnect();
     }
   }

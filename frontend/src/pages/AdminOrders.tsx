@@ -108,8 +108,8 @@ export function AdminOrders() {
                       <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>${order.total.toFixed(2)}</span>
                     </td>
                     <td>
-                      <p className="body-sm" style={{ color: 'var(--color-text-muted)' }}>{new Date(order.createdAt).toLocaleDateString()}</p>
-                      <p className="body-sm" style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{new Date(order.createdAt).toLocaleTimeString()}</p>
+                      <p className="body-sm" style={{ color: 'var(--color-text-muted)' }}>{new Date(order.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'numeric', year: 'numeric' })}</p>
+                      <p className="body-sm" style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{new Date(order.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
                     </td>
                     <td>
                       <span className={`badge ${getStatusBadgeClass(order.status)}`}>

@@ -28,6 +28,6 @@ export class ChatService {
       distinct: ['room'],
       select: { room: true },
     });
-    return distinctRooms.map(r => r.room);
+    return distinctRooms.map(r => ({ room: r.room }));
   }
 }
