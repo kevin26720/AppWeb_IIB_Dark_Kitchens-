@@ -26,6 +26,12 @@ export const register = async (dto: RegisterDto): Promise<AuthResponse> => {
   return data
 }
 
+export const verifyEmail = async (token: string): Promise<{ message: string }> => {
+  if (MOCK) return { message: 'MOCK: Email verified' }
+  const { data } = await client.post<{ message: string }>('/auth/verify-email', { token })
+  return data
+}
+
 export const forgotPassword = async (email: string): Promise<void> => {
   if (MOCK) return mockForgotPassword(email)
   await client.post('/auth/forgot-password', { email })

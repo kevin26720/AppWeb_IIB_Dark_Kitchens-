@@ -76,6 +76,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: http://localhost:4000/api/auth/google/callback
+      RESEND_API_KEY: ${RESEND_API_KEY}
     depends_on:
       - db-auth
       - redis-broker

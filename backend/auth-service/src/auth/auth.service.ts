@@ -15,6 +15,8 @@ import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { EmailService } from './email.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +27,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
+    private readonly emailService: EmailService,
   ) {}
 
   // ─── REGISTER ─────────────────────────────────────────
@@ -43,6 +46,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 12);
+    const verificationToken = randomUUID();
 
     const user = await this.prisma.user.create({
       data: {
@@ -50,20 +54,30 @@ export class AuthService {
         password: hashedPassword,
         name: dto.name,
         role: 'CLIENT',
+        verificationToken,
+        isVerified: false,
       },
     });
 
+    // Enviar el correo de verificación sin bloquear la respuesta
+    this.emailService.sendVerificationEmail(user.email, verificationToken).catch(e => {
+      this.logger.error('Error sending verification email during registration', e);
+    });
+
+    // Nota: Como ahora requerimos verificación, no devolvemos el token de acceso aquí.
+    // El frontend debería redirigir a una pantalla de "revisa tu correo" y no hacer auto-login.
+    // Devolvemos el payload sin token, o un authResponse modificado.
     const payload = this.mapToUserPayload(user);
-    const token = this.generateToken(user);
 
     await this.publishAuditEvent({
       userId: user.id,
       action: 'REGISTER',
       resource: 'auth',
       status: 'SUCCESS',
+      details: 'Pending email verification',
     });
 
-    return { token, user: payload };
+    return { token: '', user: payload };
   }
 
   // ─── LOGIN ────────────────────────────────────────────
@@ -76,6 +90,13 @@ export class AuthService {
       throw new HttpException(
         'Invalid email or password',
         HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    if (!user.isVerified) {
+      throw new HttpException(
+        'Please verify your email before logging in. Check your inbox.',
+        HttpStatus.FORBIDDEN,
       );
     }
 
@@ -281,6 +302,7 @@ export class AuthService {
             googleId: profile.googleId,
             password: '', // No password for Google users
             role: 'CLIENT',
+            isVerified: true, // Auto-verificado
           },
         });
       }
@@ -297,6 +319,38 @@ export class AuthService {
     });
 
     return { token, user: payload };
+  }
+
+  // ─── VERIFY EMAIL ──────────────────────────────────────
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findFirst({
+      where: { verificationToken: token },
+    });
+
+    if (!user) {
+      throw new HttpException('Invalid or expired verification token', HttpStatus.BAD_REQUEST);
+    }
+
+    if (user.isVerified) {
+      return { message: 'Email is already verified' };
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        verificationToken: null,
+      },
+    });
+
+    await this.publishAuditEvent({
+      userId: user.id,
+      action: 'VERIFY_EMAIL',
+      resource: 'auth',
+      status: 'SUCCESS',
+    });
+
+    return { message: 'Email verified successfully' };
   }
 
   // ─── PRIVATE HELPERS ─────────────────────────────────

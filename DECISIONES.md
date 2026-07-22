@@ -21,7 +21,7 @@ La aplicación es una plataforma para la gestión de catering (Dark Kitchens) or
 Para que el agente comprenda el comportamiento funcional de la aplicación, los flujos de negocio principales se estructuran de la siguiente manera:
 
 ### A. Flujo del Cliente (CLIENT)
-1. **Registro e Ingreso:** El cliente se registra o inicia sesión. Si olvida su contraseña, ingresa su email para recibir un enlace de recuperación con un token de 30 minutos.
+1. **Registro e Ingreso:** El cliente se registra proporcionando su correo y contraseña. El sistema envía de forma asíncrona un correo de verificación (mediante SMTP/Resend) con un token único. El usuario no puede iniciar sesión hasta haber hecho clic en el enlace de su correo. Si olvida su contraseña, ingresa su email para recibir un enlace de recuperación con un token de 30 minutos.
 2. **Exploración:** Navega por el catálogo de productos, filtra por categorías (ej. "Entradas", "Platos Fuertes", "Bebidas") y busca por texto. Solo puede ver productos con la marca `available: true`.
 3. **Carrito y Pedido:** Añade productos a su carrito (estado local de Zustand en el frontend). Al confirmar, crea un pedido ingresando notas especiales (ej. "sin cebolla"). El pedido inicia con estado `PENDING`.
 4. **Soporte y Chat:** Si tiene dudas sobre su pedido, abre la ventana de chat de soporte. El cliente entra a una sala exclusiva para su conversación (`room_client_<userId>`) y puede enviar mensajes que quedan guardados históricamente.
@@ -155,9 +155,11 @@ model User {
   email     String   @unique
   password  String   // Contraseña encriptada con bcryptjs (12 rounds)
   name      String
-  role      Role     @default(CLIENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role              Role     @default(CLIENT)
+  isVerified        Boolean  @default(false)
+  verificationToken String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@index([email])
 }
@@ -317,7 +319,10 @@ Ruta pública del gateway: `/api/auth/*`
 
 * **`POST /api/auth/register`** (Público)
   * *Request Body:* `{ "email": "x@x.com", "password": "Strong123!", "name": "Nombre" }`
-  * *Comportamiento:* Valida contraseñas fuertes (8+ caracteres, número, minúscula, mayúscula y carácter especial). Retorna el usuario creado y un JWT token.
+  * *Comportamiento:* Valida contraseñas fuertes (8+ caracteres, número, minúscula, mayúscula y carácter especial). Genera un token, envía el correo de verificación vía SMTP y retorna el usuario creado con `token: ''` (pendiente de verificación).
+* **`POST /api/auth/verify-email`** (Público)
+  * *Request Body:* `{ "token": "UUID_TOKEN" }`
+  * *Comportamiento:* Valida el token, marca al usuario como `isVerified: true` y elimina el token de verificación.
 * **`POST /api/auth/login`** (Público)
   * *Request Body:* `{ "email": "x@x.com", "password": "Strong123!" }`
   * *Response:* `{ "token": "JWT_TOKEN", "user": { "id", "email", "name", "role" } }`

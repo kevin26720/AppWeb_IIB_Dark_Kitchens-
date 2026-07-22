@@ -41,7 +41,12 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null })
         try {
           const data = await authApi.register(dto)
-          set({ token: data.token, user: data.user, isAuthenticated: true, isLoading: false })
+          if (data.token) {
+            set({ token: data.token, user: data.user, isAuthenticated: true, isLoading: false })
+          } else {
+            // Requiere verificación por correo, no iniciamos sesión
+            set({ isLoading: false })
+          }
         } catch (err: any) {
           set({ error: err.message || 'Error al registrarse', isLoading: false })
           throw err

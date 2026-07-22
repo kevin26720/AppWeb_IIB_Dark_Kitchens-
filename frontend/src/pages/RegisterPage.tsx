@@ -19,6 +19,8 @@ export function RegisterPage() {
   const navigate = useNavigate()
   const { register: registerUser, isLoading, error, clearError } = useAuthStore()
 
+  const [isSuccess, setIsSuccess] = useState(false)
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -49,7 +51,7 @@ export function RegisterPage() {
     setFieldErrors({})
     try {
       await registerUser({ name, email, password })
-      navigate('/catalog', { replace: true })
+      setIsSuccess(true)
     } catch {
       // handled by store
     }
@@ -103,13 +105,21 @@ export function RegisterPage() {
           <h2 className={`headline-lg ${styles.formTitle}`}>Crear cuenta</h2>
           <p className={`body-md ${styles.formSubtitle}`}>Empieza tu experiencia gastronómica</p>
 
-          {error && (
+          {isSuccess && (
+            <div className={styles.successBanner} style={{ backgroundColor: 'rgba(78, 222, 163, 0.1)', color: '#4edea3', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', border: '1px solid rgba(78, 222, 163, 0.2)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>check_circle</span>
+              Cuenta creada con éxito. Por favor, revisa tu correo electrónico para verificar tu cuenta antes de iniciar sesión.
+            </div>
+          )}
+
+          {error && !isSuccess && (
             <div className={styles.errorBanner}>
               <span className="material-symbols-outlined" style={{ fontSize: 18 }}>error</span>
               {error}
             </div>
           )}
 
+          {!isSuccess ? (
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className="input-group">
               <label className="input-label" htmlFor="reg-name">Nombre completo</label>
@@ -229,6 +239,13 @@ export function RegisterPage() {
               ) : 'Crear cuenta'}
             </button>
           </form>
+          ) : (
+            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+              <Link to="/login" className={`btn btn-primary ${styles.submitBtn}`}>
+                Ir a Iniciar Sesión
+              </Link>
+            </div>
+          )}
 
           <div className={styles.dividerRow}>
             <span className={styles.dividerLine} />

@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
+import { VerifyEmailPage } from '@/pages/VerifyEmailPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { ChatPage } from '@/pages/ChatPage'
@@ -36,6 +37,8 @@ function App() {
           path="/register"
           element={isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />}
         />
+
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* OAuth callback */}
         <Route

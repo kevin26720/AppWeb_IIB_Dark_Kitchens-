@@ -72,6 +72,14 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
+  @Post('verify-email')
+  async verifyEmail(@Body('token') token: string) {
+    if (!token) {
+      throw new HttpException('Token is required', HttpStatus.BAD_REQUEST);
+    }
+    return this.authService.verifyEmail(token);
+  }
+
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
