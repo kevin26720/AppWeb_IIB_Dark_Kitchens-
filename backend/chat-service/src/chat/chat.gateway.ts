@@ -92,7 +92,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const user = client.data.user;
     if (user && user.sub) {
       const savedMessage = await this.chatService.saveMessage(payload.content, parseInt(user.sub, 10), payload.room);
-      this.server.to(payload.room).emit('chat:message', savedMessage);
+      this.server.to(payload.room).emit('chat:message', { ...savedMessage, content: payload.content });
       this.server.emit('chat:conversations-updated');
     }
   }
