@@ -31,9 +31,6 @@ export function LoginPage() {
       <div className={styles.leftPanel}>
         <div className={styles.glowOrb} />
         <div className={styles.leftContent}>
-          <div className={styles.brandMark}>
-            <span className={styles.brandIcon}>🍳</span>
-          </div>
           <h1 className={`display-lg ${styles.heroTitle}`}>
             Dark<span className={styles.accent}>Kitchen</span>
           </h1>

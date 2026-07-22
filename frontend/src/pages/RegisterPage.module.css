@@ -1,18 +1,21 @@
 /* RegisterPage.module.css */
 .root {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--color-surface-deep);
+  overflow: hidden;
 }
 
 .leftPanel {
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 48px;
+  padding: 100px 48px 48px;
   overflow: hidden;
   background: radial-gradient(
     ellipse 80% 60% at 30% 50%,
@@ -81,6 +84,14 @@
 .perkIcon { font-size: 20px; }
 .perkText { font-size: 13px; color: var(--color-on-surface); font-weight: 500; }
 
+/* ─── Food visual container + floating chips (igual que Login) ─── */
+.foodVisual {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin-top: 20px;
+}
+
 .foodOrb {
   width: 180px;
   height: 180px;
@@ -92,7 +103,29 @@
   justify-content: center;
   animation: float 6s ease-in-out infinite;
   box-shadow: 0 0 40px rgba(78,222,163,0.1);
+  margin: 20px auto;
 }
+
+.foodChip {
+  position: absolute;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  animation: float 4s ease-in-out infinite;
+}
+
+.chip1 { top: 0;    left: -50px; animation-delay: 0s; }
+.chip2 { top: 20px; right: -30px; animation-delay: 1s; }
+.chip3 { bottom: 10px; left: -20px; animation-delay: 2s; }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
@@ -102,7 +135,7 @@
 /* ─── Right Panel ─── */
 .rightPanel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   width: 500px;
   min-width: 440px;
@@ -110,6 +143,7 @@
   background: rgba(11, 15, 25, 0.5);
   border-left: 1px solid var(--color-border-glass);
   overflow-y: auto;
+  height: 100vh;
 }
 
 .formCard {

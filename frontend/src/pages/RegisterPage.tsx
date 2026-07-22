@@ -70,9 +70,6 @@ export function RegisterPage() {
       <div className={styles.leftPanel}>
         <div className={styles.glowOrb} />
         <div className={styles.leftContent}>
-          <div className={styles.brandMark}>
-            <span className={styles.brandIcon}>🍳</span>
-          </div>
           <h1 className={`display-lg ${styles.heroTitle}`}>
             Dark<span className={styles.accent}>Kitchen</span>
           </h1>
@@ -89,8 +86,13 @@ export function RegisterPage() {
             ))}
           </div>
         </div>
-        <div className={styles.foodOrb}>
-          <span style={{ fontSize: 80 }}>🥗</span>
+        <div className={styles.foodVisual}>
+          <div className={styles.foodOrb}>
+            <span style={{ fontSize: 80 }}>🥗</span>
+          </div>
+          <div className={`${styles.foodChip} ${styles.chip1}`}><span>🚀</span> Envío gratis</div>
+          <div className={`${styles.foodChip} ${styles.chip2}`}><span>⭐</span> Top picks</div>
+          <div className={`${styles.foodChip} ${styles.chip3}`}><span>🍽️</span> +50 platos</div>
         </div>
       </div>
 

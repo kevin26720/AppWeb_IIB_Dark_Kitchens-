@@ -205,8 +205,12 @@ export class AuthService {
       { expiresIn: '30m' },
     );
 
-    // In production, send this via email
-    console.log(`🔑 Password reset token for ${user.email}: ${resetToken}`);
+    const resetUrl = `${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+
+    // Enviar correo de recuperación de forma asíncrona
+    this.emailService.sendPasswordResetEmail(user.email, resetUrl).catch(e => {
+      this.logger.error('Error sending password reset email', e);
+    });
 
     await this.publishAuditEvent({
       userId: user.id,

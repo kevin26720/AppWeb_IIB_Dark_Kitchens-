@@ -37,6 +37,11 @@ export const forgotPassword = async (email: string): Promise<void> => {
   await client.post('/auth/forgot-password', { email })
 }
 
+export const resetPassword = async (token: string, newPassword: string): Promise<{ message: string }> => {
+  const { data } = await client.post<{ message: string }>('/auth/reset-password', { token, newPassword })
+  return data
+}
+
 export const getProfile = async () => {
   const { data } = await client.get('/auth/profile')
   return data
