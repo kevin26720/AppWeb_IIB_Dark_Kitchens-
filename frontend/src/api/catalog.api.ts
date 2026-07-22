@@ -2,6 +2,10 @@ import type { Product, ProductsResponse } from '@darkitchen/shared'
 import { mockGetProducts, mockGetProduct, mockGetCategories } from './mock/catalog.mock'
 import { client } from './client'
 
+// ============================================================================
+// CONFIGURACIÓN DE ENTORNO
+// Bandera booleana que verifica si la aplicación se está ejecutando en modo simulación
+// evaluando las variables de entorno inyectadas por Vite.
 const MOCK = import.meta.env.VITE_MOCK_MODE === 'true'
 
 export const getProducts = async (params?: {

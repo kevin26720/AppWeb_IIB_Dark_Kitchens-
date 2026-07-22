@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useAuthStore } from '@/store/authStore'
 
+// Configursación del cliente HTTP utilizando Axios, con una URL base que se ajusta según las variables de entorno.
 export const client = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/api\/?$/, '').replace(/\/$/, '') + '/api',
   timeout: 15000,

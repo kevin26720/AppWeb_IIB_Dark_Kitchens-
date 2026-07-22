@@ -2,6 +2,8 @@ import type { AuthResponse, LoginDto, RegisterDto, UserPayload } from '@darkitch
 import { mockLogin, mockRegister, mockForgotPassword } from './mock/auth.mock'
 import { client } from './client'
 
+// Variable que determina si la aplicación interceptará las llamadas reales 
+// para devolver datos simulados durante el desarrollo.
 const MOCK = import.meta.env.VITE_MOCK_MODE === 'true'
 
 export const login = async (dto: LoginDto): Promise<AuthResponse> => {

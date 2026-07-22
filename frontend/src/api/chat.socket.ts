@@ -1,5 +1,7 @@
 import { io, Socket } from 'socket.io-client'
 
+// Define la URL del servidor WebSocket basándose en las variables de entorno.
+// Si no está definida, utiliza un valor por defecto para desarrollo local.
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
 let socket: Socket | null = null
