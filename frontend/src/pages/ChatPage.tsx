@@ -218,8 +218,8 @@ export function ChatPage() {
         <div className={styles.roomSection}>
           <p className={styles.roomLabel}>Sala activa</p>
           <div className={styles.roomChip}>
-            <span className="material-symbols-outlined">meeting_room</span>
-            {roomId}
+            <span className="material-symbols-outlined">shield_person</span>
+            Soporte Privado
           </div>
         </div>
       </aside>

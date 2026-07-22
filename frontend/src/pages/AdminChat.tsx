@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
 import { getConversations, getMessages } from '@/api/chat.api'
+import { getSocket } from '@/api/chat.socket'
+import { getAllUsers } from '@/api/auth.api'
 import { useAuthStore } from '@/store/authStore'
 import { useChatStore } from '@/store/chatStore'
 import type { ChatRoom } from '@darkitchen/shared'
@@ -22,6 +24,7 @@ export function AdminChat() {
   const [conversations, setConversations] = useState<ChatRoom[]>([])
   const [activeRoom, setActiveRoom] = useState<string | null>(null)
   const [inputMessage, setInputMessage] = useState('')
+  const [usersMap, setUsersMap] = useState<Record<string, string>>({})
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -29,18 +32,50 @@ export function AdminChat() {
   useEffect(() => {
     if (token) {
       connect(token)
+      const socket = getSocket()
+      if (socket) {
+        // Unirse a la sala de notificaciones globales para administradores
+        socket.emit('chat:join-admin-room')
+        
+        // Escuchar cuando haya nuevas conversaciones o mensajes en otras salas
+        socket.on('chat:conversations-updated', () => {
+          getConversations()
+            .then(setConversations)
+            .catch((err) => console.error('Failed to update conversations:', err))
+        })
+      }
     }
     return () => {
+      const socket = getSocket()
+      if (socket) {
+        socket.off('chat:conversations-updated')
+      }
       disconnect()
     }
   }, [token, connect, disconnect])
 
-  // Load conversations
+  // Load conversations and users map
   useEffect(() => {
-    getConversations()
-      .then(setConversations)
-      .catch((err) => console.error('Failed to get conversations:', err))
+    Promise.all([
+      getConversations(),
+      getAllUsers()
+    ])
+      .then(([convs, users]) => {
+        setConversations(convs)
+        const map: Record<string, string> = {}
+        users.forEach(u => map[u.id.toString()] = u.name)
+        setUsersMap(map)
+      })
+      .catch((err) => console.error('Failed to get conversations or users:', err))
   }, [])
+
+  const getRoomName = (room: string) => {
+    const match = room.match(/room_client_(\d+)/)
+    if (match && usersMap[match[1]]) {
+      return usersMap[match[1]]
+    }
+    return room
+  }
 
   // Change active room
   useEffect(() => {
@@ -120,7 +155,7 @@ export function AdminChat() {
                     <span className={styles.headerOnlineDot} />
                   </div>
                   <div className={styles.convDetails}>
-                    <p className="body-sm" style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>{conv.room}</p>
+                    <p className="body-sm" style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>{getRoomName(conv.room)}</p>
                     <p className={styles.convPreview}>{conv.lastMessage || 'Nueva conversación'}</p>
                   </div>
                   {conv.unreadCount ? (
@@ -142,7 +177,7 @@ export function AdminChat() {
                       <span className={styles.headerOnlineDot} />
                     </div>
                     <div>
-                      <p style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '1rem', margin: 0 }}>{activeRoom}</p>
+                      <p style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '1rem', margin: 0 }}>{getRoomName(activeRoom)}</p>
                       <p style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, margin: 0, fontSize: '0.75rem', color: 'var(--color-secondary)', fontWeight: 500 }}>
                         Activo
                       </p>
@@ -162,7 +197,7 @@ export function AdminChat() {
                         <div className={isAdmin ? 'bubble-admin' : 'bubble-client'}>
                           {!isAdmin && (
                             <p className="label-md" style={{ color: 'var(--color-primary)', marginBottom: 4 }}>
-                              {msg.userName}
+                              {usersMap[msg.userId] || msg.userName || 'Cliente'}
                             </p>
                           )}
                           <p className="body-md">{msg.content}</p>

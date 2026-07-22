@@ -82,12 +82,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     client.leave(room);
   }
 
+  @SubscribeMessage('chat:join-admin-room')
+  handleJoinAdminRoom(client: Socket) {
+    client.join('admin_global_room');
+  }
+
   @SubscribeMessage('chat:message')
   async handleMessage(client: Socket, payload: { content: string; room: string }) {
     const user = client.data.user;
     if (user && user.sub) {
       const savedMessage = await this.chatService.saveMessage(payload.content, parseInt(user.sub, 10), payload.room);
       this.server.to(payload.room).emit('chat:message', savedMessage);
+      this.server.emit('chat:conversations-updated');
     }
   }
 
