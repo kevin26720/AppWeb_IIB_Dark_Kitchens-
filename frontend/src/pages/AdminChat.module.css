@@ -212,3 +212,55 @@
   justify-content: center;
   background: var(--color-surface-deep);
 }
+
+/* --- Responsive Chat Layout --- */
+
+.mobileBackBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 8px;
+  margin-left: -8px;
+  border-radius: 50%;
+  transition: background var(--transition-fast);
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileBackBtn:hover {
+  background: var(--color-surface-container-highest);
+}
+
+/* Tablet / Split screen: El sidebar se oculta (vía su propio CSS), así que aprovechamos el espacio */
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: 16px;
+  }
+}
+
+/* Mobile: Patrón Master-Detail (mostrar lista O conversación) */
+@media (max-width: 768px) {
+  .mobileBackBtn {
+    display: flex;
+  }
+
+  .conversationsPanel {
+    width: 100%;
+    border-right: none;
+  }
+  
+  .chatPanel {
+    width: 100%;
+  }
+
+  /* Clases condicionales inyectadas por React */
+  .mobileShowList .chatPanel {
+    display: none !important;
+  }
+  
+  .mobileShowChat .conversationsPanel {
+    display: none !important;
+  }
+}

@@ -71,8 +71,8 @@ export function AdminChat() {
 
   const getRoomName = (room: string) => {
     const match = room.match(/room_client_(\d+)/)
-    if (match && usersMap[match[1]]) {
-      return usersMap[match[1]]
+    if (match) {
+      return usersMap[match[1]] || `Cliente ${match[1]}`
     }
     return room
   }
@@ -131,7 +131,7 @@ export function AdminChat() {
     <div className={styles.adminLayout}>
       <AdminSidebar />
       <main className={styles.mainContent}>
-        <div className={`glass-card ${styles.chatContainer}`}>
+        <div className={`glass-card ${styles.chatContainer} ${!activeRoom ? styles.mobileShowList : styles.mobileShowChat}`}>
           
           {/* Panel Izquierdo: Lista de Conversaciones */}
           <div className={styles.conversationsPanel}>
@@ -172,6 +172,13 @@ export function AdminChat() {
               <>
                 <div className={styles.chatHeader}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button 
+                      className={styles.mobileBackBtn} 
+                      onClick={() => setActiveRoom(null)}
+                      title="Volver a mensajes"
+                    >
+                      <span className="material-symbols-outlined">arrow_back</span>
+                    </button>
                     <div className={styles.headerAvatar}>
                       <span className="material-symbols-outlined">person</span>
                       <span className={styles.headerOnlineDot} />

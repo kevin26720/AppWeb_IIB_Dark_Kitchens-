@@ -16,10 +16,13 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/admin/chat', icon: 'forum', label: 'Chat' },
 ]
 
+import { useState } from 'react'
+
 export default function AdminSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -27,7 +30,22 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className={styles.sidebar}>
+    <>
+      {/* Botón flotante para abrir sidebar en móviles */}
+      <button 
+        className={styles.mobileToggleBtn} 
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle admin menu"
+      >
+        <span className="material-symbols-outlined">{isOpen ? 'close' : 'menu'}</span>
+      </button>
+
+      {/* Overlay oscuro cuando el menú está abierto en móvil */}
+      {isOpen && (
+        <div className={styles.overlay} onClick={() => setIsOpen(false)} />
+      )}
+
+      <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
       {/* Logo */}
       <div className={styles.logoSection}>
         <div className={styles.logoIcon}>🍳</div>
@@ -82,5 +100,6 @@ export default function AdminSidebar() {
         </button>
       </div>
     </aside>
+    </>
   )
 }
