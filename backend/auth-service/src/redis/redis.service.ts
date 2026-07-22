@@ -9,6 +9,7 @@ export class RedisService implements OnModuleInit {
   private readonly logger = new Logger(RedisService.name);
 
   constructor(private readonly configService: ConfigService) {
+    // Cada cliente cumple un rol distinto: uno publica y el otro escucha mensajes.
     const host = this.configService.get<string>('REDIS_HOST', 'localhost');
     const port = this.configService.get<number>('REDIS_PORT', 6379);
 
@@ -17,6 +18,7 @@ export class RedisService implements OnModuleInit {
   }
 
   async onModuleInit() {
+    // Los logs ayudan a diagnosticar si el bus de eventos quedo conectado.
     this.client.on('connect', () => this.logger.log('Redis client connected'));
     this.client.on('error', (err) => this.logger.error('Redis client error', err));
     this.subscriber.on('connect', () => this.logger.log('Redis subscriber connected'));

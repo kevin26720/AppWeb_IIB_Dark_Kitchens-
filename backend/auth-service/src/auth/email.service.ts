@@ -8,6 +8,7 @@ export class EmailService {
   private resend: Resend;
 
   constructor(private readonly configService: ConfigService) {
+    // El proveedor de correo se configura por entorno para no acoplar credenciales al codigo.
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
     if (!apiKey) {
       this.logger.warn('RESEND_API_KEY is not defined. Email sending will be mocked or will fail.');
@@ -17,6 +18,7 @@ export class EmailService {
   }
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
+    // El enlace apunta al frontend, que luego llama al endpoint de verificacion.
     const verificationUrl = `${this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173'}/verify-email?token=${token}`;
 
     const html = `
@@ -52,6 +54,7 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+    // El correo de recuperacion solo entrega el enlace temporal; no cambia la clave por si mismo.
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #472a00; text-align: center;">Restablece tu contraseña 🔑</h2>

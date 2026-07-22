@@ -32,6 +32,7 @@ export class AuthService {
 
   // ─── REGISTER ─────────────────────────────────────────
   async register(dto: RegisterDto): Promise<AuthResponse> {
+    // Un registro nuevo siempre debe empezar con una contraseña fuerte y un correo unico.
     this.validatePasswordStrength(dto.password);
 
     const existingUser = await this.prisma.user.findUnique({
@@ -59,14 +60,12 @@ export class AuthService {
       },
     });
 
-    // Enviar el correo de verificación sin bloquear la respuesta
+    // El correo de verificacion se lanza en segundo plano para no frenar la API.
     this.emailService.sendVerificationEmail(user.email, verificationToken).catch(e => {
       this.logger.error('Error sending verification email during registration', e);
     });
 
-    // Nota: Como ahora requerimos verificación, no devolvemos el token de acceso aquí.
-    // El frontend debería redirigir a una pantalla de "revisa tu correo" y no hacer auto-login.
-    // Devolvemos el payload sin token, o un authResponse modificado.
+    // No hay auto-login hasta verificar el email; el frontend debe mostrar una espera de confirmacion.
     const payload = this.mapToUserPayload(user);
 
     await this.publishAuditEvent({
@@ -82,6 +81,7 @@ export class AuthService {
 
   // ─── LOGIN ────────────────────────────────────────────
   async login(dto: LoginDto): Promise<AuthResponse> {
+    // Solo se emite JWT si el usuario existe, verifico su email y la contrasena coincide.
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -132,6 +132,7 @@ export class AuthService {
 
   // ─── GET PROFILE ──────────────────────────────────────
   async getProfile(userId: number): Promise<UserPayload> {
+    // El gateway ya resolvio la identidad; aqui solo se consulta la informacion basica.
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -153,6 +154,7 @@ export class AuthService {
 
   // ─── CHANGE PASSWORD ─────────────────────────────────
   async changePassword(userId: number, dto: ChangePasswordDto): Promise<{ message: string }> {
+    // Para cambiar la clave hay que validar primero la actual y luego reforzar la nueva.
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -191,6 +193,7 @@ export class AuthService {
 
   // ─── FORGOT PASSWORD ─────────────────────────────────
   async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    // No confirma si el usuario existe para evitar filtracion de cuentas.
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -224,6 +227,7 @@ export class AuthService {
 
   // ─── RESET PASSWORD ──────────────────────────────────
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    // El token recuperado se valida antes de tocar la contrasena.
     let decoded: { sub: number; email: string; type: string };
 
     try {
@@ -263,6 +267,7 @@ export class AuthService {
 
   // ─── REFRESH TOKEN ────────────────────────────────────
   async refresh(userId: number): Promise<{ token: string }> {
+    // Reemite un JWT nuevo a partir del usuario que ya fue autenticado por el gateway.
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -282,6 +287,7 @@ export class AuthService {
     email: string;
     name: string;
   }): Promise<AuthResponse> {
+    // La estrategia Google delega aqui la reconciliacion entre cuenta social y cuenta local.
     let user = await this.prisma.user.findUnique({
       where: { googleId: profile.googleId },
     });
@@ -327,6 +333,7 @@ export class AuthService {
 
   // ─── VERIFY EMAIL ──────────────────────────────────────
   async verifyEmail(token: string): Promise<{ message: string }> {
+    // El token de verificacion se busca de forma directa porque fue generado por el propio servicio.
     const user = await this.prisma.user.findFirst({
       where: { verificationToken: token },
     });
@@ -364,6 +371,7 @@ export class AuthService {
     name: string;
     role: string;
   }): string {
+    // El JWT transporta solo identidad y rol; el resto vive en la base de datos.
     return this.jwtService.sign({
       sub: user.id,
       email: user.email,
@@ -378,6 +386,7 @@ export class AuthService {
     name: string;
     role: string;
   }): UserPayload {
+    // Se expone un payload minimo para no filtrar campos sensibles al frontend.
     return {
       id: user.id,
       email: user.email,
@@ -405,6 +414,7 @@ export class AuthService {
     status: string;
     details?: string;
   }): Promise<void> {
+    // Publica eventos de auditoria sin acoplar el auth service a un consumidor concreto.
     try {
       await this.redisService.publish(
         'audit:events',

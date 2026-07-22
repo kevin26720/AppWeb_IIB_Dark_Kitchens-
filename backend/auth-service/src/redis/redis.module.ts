@@ -3,6 +3,7 @@ import { RedisService } from './redis.service';
 
 @Global()
 @Module({
+  // RedisService tambien se comparte globalmente para eventos y suscripciones.
   providers: [RedisService],
   exports: [RedisService],
 })
