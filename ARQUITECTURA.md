@@ -24,6 +24,9 @@ flowchart TD
         Chat["Chat Service\n(Puerto 4004/4005)"]:::backend
     end
 
+
+
+
     subgraph ORMLayer ["Capa ORM"]
         PrismaAuth{"Prisma"}:::prisma
         PrismaCatalog{"Prisma"}:::prisma
